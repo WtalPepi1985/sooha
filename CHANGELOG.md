@@ -12,7 +12,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - Icon-Datei (`sooha.ico`) für PyInstaller Build
 - Mehrere Monitore unterstützen
-- MQTT-Sensoren in HA testen und verifizieren
+
+---
+
+## [0.3.4] - 2026-06-04
+
+### Added
+- `sensor.sooha_version` — meldet die laufende SOOHA-Version an HA (immer aktiv, alle 60s)
+- `sensor.sooha_win_updates` — Anzahl ausstehender Windows-Updates via PowerShell COM-Objekt, alle 2 Stunden (optional)
+- **MQTT Availability** — alle HA-Entities zeigen automatisch „unavailable" wenn SOOHA nicht läuft (Last Will Testament + sauberes Offline beim Beenden/Reboot)
+
+### Removed
+- HA-Update-Check entfernt (`feature_update_notify`) — ersetzt durch Windows-Update-Sensor
+
+### Changed
+- Beenden im Tray-Menü sendet jetzt sauber „offline" vor dem Exit
+
+---
+
+## [0.3.3] - 2026-06-04
+
+### Fixed
+- `config.json` wurde neben der `.exe` erstellt statt im PyInstaller-Temp-Verzeichnis (`sys.executable` statt `__file__`)
+
+---
+
+## [0.3.2] - 2026-06-04
+
+### Added
+- `config.json` wird beim ersten Start automatisch mit Standardwerten angelegt
 
 ---
 
@@ -26,8 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2026-06-04
 
 ### Added
-- **MQTT-Sensoren** — werden automatisch via HA Discovery als Entities angelegt:
-  - `sensor.sooha_uptime` — Windows Uptime (z.B. „2d 5h 30m"), alle 60 Sekunden
+- **MQTT-Sensoren** via HA Discovery (kein YAML nötig):
+  - `sensor.sooha_uptime` — Windows Uptime (z.B. „2d 5h 30m"), alle 60s
   - `sensor.sooha_cpu` — CPU-Auslastung in % via psutil (optional)
   - `sensor.sooha_ram` — RAM-Auslastung in % via psutil (optional)
 - `sensors.py` — Windows Uptime via `GetTickCount64`, CPU/RAM via `psutil`
@@ -36,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Screen ging nicht aus: `HWND_BROADCAST` war `-1` (= `HWND_TOPMOST`) statt `0xFFFF`
 - Explizite `ctypes`-Argtypes verhindert stille Typkonvertierungsfehler
-- Screen-Off jetzt doppelt abgesichert: `SendMessage` (Desktop) + `PostMessage` (Broadcast)
+- Screen-Off doppelt abgesichert: `SendMessage` (Desktop) + `PostMessage` (Broadcast)
 - State-Sync: `check_woken()` via `GetLastInputInfo` erkennt wenn Maus/Tastatur den Screen weckt
 
 ### Changed
@@ -51,16 +79,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab **MQTT**: Host, Port, Benutzername, Passwort, Gerätename, Geräte-ID + Verbindungstest
 - Tab **Home Assistant**: URL, Token + Verbindungstest mit HA-Versionsanzeige
 - Tab **Features**: 4 ein-/ausschaltbare Optionen (Checkboxen)
-- Feature **Update-Benachrichtigung**: HA-Updates werden im Tooltip und Menü angezeigt
-- Feature **Laufzeit anzeigen**: App-Laufzeit im Tray-Tooltip
-- Feature **Reboot-Option**: „Windows neu starten…" im Tray-Menü mit Bestätigungsdialog
-- Feature **MQTT-Status**: Verbindungsstatus im Tooltip (✓ / ✗)
 - HA-Client (`ha_client.py`) mit Update-Check alle 5 Minuten
 - `config.py` als gemeinsames Config-Modul mit Defaults und Fallback
 
 ### Changed
 - `config.json` um HA-URL, HA-Token und alle Feature-Flags erweitert
-- Tray-Tooltip zeigt jetzt zusammengesetzten Status-String
 - `requirements.txt` um `requests` ergänzt
 
 ---
@@ -77,7 +100,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `build.bat` für PyInstaller One-File Build → `dist\SOOHA.exe`
 - `install.bat` für manuellen Autostart-Eintrag in der Registry
 
-[Unreleased]: https://github.com/WtalPepi1985/sooha/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/WtalPepi1985/sooha/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/WtalPepi1985/sooha/compare/v0.3.3...v0.3.4
+[0.3.3]: https://github.com/WtalPepi1985/sooha/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/WtalPepi1985/sooha/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/WtalPepi1985/sooha/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/WtalPepi1985/sooha/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/WtalPepi1985/sooha/compare/v0.1.0...v0.2.0
