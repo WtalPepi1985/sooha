@@ -173,7 +173,15 @@ class App:
         self._ha = self._make_ha_client()
         self._update_tooltip()
 
-    # ── Background ticker ─────────────────────────────────────────────────────
+    # ── Background threads ────────────────────────────────────────────────────
+
+    def _woken_watcher(self):
+        """Polls every 2s whether user input woke the screen, syncs state + HA."""
+        while True:
+            time.sleep(2)
+            if scr.check_woken():
+                self._mqtt.publish_state(True)
+                self._refresh_tray()
 
     def _ticker(self):
         last_ha_check = 0.0
@@ -192,6 +200,7 @@ class App:
     def run(self):
         self._mqtt.start()
         threading.Thread(target=self._ticker, daemon=True).start()
+        threading.Thread(target=self._woken_watcher, daemon=True).start()
 
         self._tray = pystray.Icon(
             APP_NAME,
