@@ -1,7 +1,12 @@
 import json
+import sys
 from pathlib import Path
 
-FILE = Path(__file__).parent / "config.json"
+# In a PyInstaller .exe, __file__ points to a temp dir — use sys.executable instead
+if getattr(sys, "frozen", False):
+    FILE = Path(sys.executable).parent / "config.json"
+else:
+    FILE = Path(__file__).parent / "config.json"
 
 DEFAULTS = {
     "mqtt_host":          "10.10.4.211",
