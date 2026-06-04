@@ -12,6 +12,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - Icon-Datei (`sooha.ico`) für PyInstaller Build
 - Mehrere Monitore unterstützen
+- MQTT-Sensoren in HA testen und verifizieren
+
+---
+
+## [0.3.1] - 2026-06-04
+
+### Fixed
+- `sensors.py` fehlte in der SOURCES-Liste von `build-windows.sh` → ImportError beim Start
+
+---
+
+## [0.3.0] - 2026-06-04
+
+### Added
+- **MQTT-Sensoren** — werden automatisch via HA Discovery als Entities angelegt:
+  - `sensor.sooha_uptime` — Windows Uptime (z.B. „2d 5h 30m"), alle 60 Sekunden
+  - `sensor.sooha_cpu` — CPU-Auslastung in % via psutil (optional)
+  - `sensor.sooha_ram` — RAM-Auslastung in % via psutil (optional)
+- `sensors.py` — Windows Uptime via `GetTickCount64`, CPU/RAM via `psutil`
+- Einstellungen → Features in zwei Bereiche aufgeteilt: „HA Sensoren" und „Tray-Menü"
+
+### Fixed
+- Screen ging nicht aus: `HWND_BROADCAST` war `-1` (= `HWND_TOPMOST`) statt `0xFFFF`
+- Explizite `ctypes`-Argtypes verhindert stille Typkonvertierungsfehler
+- Screen-Off jetzt doppelt abgesichert: `SendMessage` (Desktop) + `PostMessage` (Broadcast)
+- State-Sync: `check_woken()` via `GetLastInputInfo` erkennt wenn Maus/Tastatur den Screen weckt
+
+### Changed
+- `requirements.txt` um `psutil` ergänzt
 
 ---
 
@@ -23,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab **Home Assistant**: URL, Token + Verbindungstest mit HA-Versionsanzeige
 - Tab **Features**: 4 ein-/ausschaltbare Optionen (Checkboxen)
 - Feature **Update-Benachrichtigung**: HA-Updates werden im Tooltip und Menü angezeigt
-- Feature **Laufzeit anzeigen**: App-Laufzeit im Tray-Tooltip (`2h 15m`)
+- Feature **Laufzeit anzeigen**: App-Laufzeit im Tray-Tooltip
 - Feature **Reboot-Option**: „Windows neu starten…" im Tray-Menü mit Bestätigungsdialog
 - Feature **MQTT-Status**: Verbindungsstatus im Tooltip (✓ / ✗)
 - HA-Client (`ha_client.py`) mit Update-Check alle 5 Minuten
@@ -44,10 +73,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MQTT-Client (`mqtt_client.py`) mit Auto-Reconnect und Backoff
 - Home Assistant MQTT Discovery → `switch.sooha_screen` erscheint automatisch
 - Monitor-Steuerung via Windows API (`screen.py`, `ctypes` + `WM_SYSCOMMAND`)
-- Zustandsverfolgung intern (kein DDC/CI erforderlich)
 - `config.json` für MQTT-Host, Port, Credentials und Gerätenamen
 - `build.bat` für PyInstaller One-File Build → `dist\SOOHA.exe`
 - `install.bat` für manuellen Autostart-Eintrag in der Registry
 
-[Unreleased]: https://github.com/WtalPepi1985/sooha/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/WtalPepi1985/sooha/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/WtalPepi1985/sooha/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/WtalPepi1985/sooha/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/WtalPepi1985/sooha/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/WtalPepi1985/sooha/releases/tag/v0.1.0
