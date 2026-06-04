@@ -28,7 +28,9 @@ def load() -> dict:
         with open(FILE, encoding="utf-8") as f:
             return {**DEFAULTS, **json.load(f)}
     except FileNotFoundError:
-        return DEFAULTS.copy()
+        data = DEFAULTS.copy()
+        save(data)
+        return data
 
 
 def save(data: dict):
