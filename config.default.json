@@ -1,11 +1,11 @@
 {
-  "mqtt_host": "10.10.4.211",
+  "mqtt_host": "192.168.1.100",
   "mqtt_port": 1883,
   "mqtt_username": "",
   "mqtt_password": "",
   "device_id": "sooha_screen",
   "device_name": "SOOHA Screen",
-  "ha_url": "http://10.10.4.21:8123",
+  "ha_url": "http://homeassistant.local:8123",
   "ha_token": "",
   "feature_update_notify": true,
   "feature_runtime": true,
