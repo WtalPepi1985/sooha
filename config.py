@@ -21,10 +21,10 @@ DEFAULTS = {
     "feature_reboot":       False,
     "feature_mqtt_status":  True,
     # MQTT sensor features (published to HA)
-    "feature_runtime":      True,   # Windows Uptime sensor
-    "feature_sensor_cpu":   False,  # CPU % sensor
-    "feature_sensor_ram":   False,  # RAM % sensor
-    "feature_update_notify": True,  # HA update binary_sensor
+    "feature_runtime":             True,   # Windows Uptime sensor
+    "feature_sensor_cpu":          False,  # CPU % sensor
+    "feature_sensor_ram":          False,  # RAM % sensor
+    "feature_sensor_win_updates":  False,  # Windows Update count sensor
 }
 
 

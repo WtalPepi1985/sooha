@@ -107,10 +107,10 @@ class SettingsWindow:
             row += 1
 
         section("── HA Sensoren (via MQTT → Home Assistant) ──")
-        checkbox("feature_runtime",      "Windows Uptime",          "→ sensor.sooha_uptime  (z.B. \"2d 5h 30m\")")
-        checkbox("feature_sensor_cpu",   "CPU-Auslastung",          "→ sensor.sooha_cpu  in %  (psutil)")
-        checkbox("feature_sensor_ram",   "RAM-Auslastung",          "→ sensor.sooha_ram  in %  (psutil)")
-        checkbox("feature_update_notify","HA-Update-Benachrichtigung","→ HA-Updates im Tray-Tooltip & Menü")
+        checkbox("feature_runtime",            "Windows Uptime",        "→ sensor.sooha_uptime  (z.B. \"2d 5h 30m\")")
+        checkbox("feature_sensor_cpu",         "CPU-Auslastung",        "→ sensor.sooha_cpu  in %  (psutil)")
+        checkbox("feature_sensor_ram",         "RAM-Auslastung",        "→ sensor.sooha_ram  in %  (psutil)")
+        checkbox("feature_sensor_win_updates", "Windows Updates",       "→ sensor.sooha_win_updates  (Anzahl ausstehender Updates, alle 2h)")
 
         section("── Tray-Menü ──")
         checkbox("feature_reboot",      "Reboot-Option",            "→ \"Windows neu starten\" im Menü (mit Bestätigung)")
