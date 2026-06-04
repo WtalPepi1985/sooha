@@ -4,5 +4,11 @@
   "mqtt_username": "",
   "mqtt_password": "",
   "device_id": "sooha_screen",
-  "device_name": "SOOHA Screen"
+  "device_name": "SOOHA Screen",
+  "ha_url": "http://10.10.4.21:8123",
+  "ha_token": "",
+  "feature_update_notify": true,
+  "feature_runtime": true,
+  "feature_reboot": false,
+  "feature_mqtt_status": true
 }

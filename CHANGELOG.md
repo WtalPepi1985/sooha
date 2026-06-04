@@ -11,9 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Icon-Datei (`sooha.ico`) für PyInstaller Build
-- MQTT-Authentifizierung testen (EMQX Username/Passwort)
-- Konfiguration über Tray-Menü editierbar
 - Mehrere Monitore unterstützen
+
+---
+
+## [0.2.0] - 2026-06-04
+
+### Added
+- Einstellungs-Fenster (`settings.py`) — Dark-Theme, 3 Tabs: MQTT, Home Assistant, Features
+- Tab **MQTT**: Host, Port, Benutzername, Passwort, Gerätename, Geräte-ID + Verbindungstest
+- Tab **Home Assistant**: URL, Token + Verbindungstest mit HA-Versionsanzeige
+- Tab **Features**: 4 ein-/ausschaltbare Optionen (Checkboxen)
+- Feature **Update-Benachrichtigung**: HA-Updates werden im Tooltip und Menü angezeigt
+- Feature **Laufzeit anzeigen**: App-Laufzeit im Tray-Tooltip (`2h 15m`)
+- Feature **Reboot-Option**: „Windows neu starten…" im Tray-Menü mit Bestätigungsdialog
+- Feature **MQTT-Status**: Verbindungsstatus im Tooltip (✓ / ✗)
+- HA-Client (`ha_client.py`) mit Update-Check alle 5 Minuten
+- `config.py` als gemeinsames Config-Modul mit Defaults und Fallback
+
+### Changed
+- `config.json` um HA-URL, HA-Token und alle Feature-Flags erweitert
+- Tray-Tooltip zeigt jetzt zusammengesetzten Status-String
+- `requirements.txt` um `requests` ergänzt
 
 ---
 

@@ -53,20 +53,62 @@ Entweder über das Tray-Menü → *Autostart aktivieren*, oder einmalig `install
 
 ---
 
-## Konfiguration
+## Einstellungen
 
-`config.json` im Programmverzeichnis:
+Über das Tray-Menü → **Einstellungen…** öffnet sich ein Konfigurationsfenster mit drei Tabs:
 
-```json
-{
-  "mqtt_host": "10.10.4.211",
-  "mqtt_port": 1883,
-  "mqtt_username": "",
-  "mqtt_password": "",
-  "device_id": "sooha_screen",
-  "device_name": "SOOHA Screen"
-}
+### Tab: MQTT
+
+| Feld | Beschreibung |
+|---|---|
+| Host | IP/Hostname des MQTT Brokers |
+| Port | Standard: `1883` |
+| Benutzername / Passwort | Optional, falls der Broker Auth erfordert |
+| Gerätename | Anzeigename in Home Assistant |
+| Geräte-ID | Technische ID (eindeutig, keine Leerzeichen) |
+
+### Tab: Home Assistant
+
+| Feld | Beschreibung |
+|---|---|
+| URL | z.B. `http://10.10.4.21:8123` |
+| Token | Long-Lived Access Token aus HA |
+
+### Tab: Features
+
+| Feature | Beschreibung |
+|---|---|
+| Update-Benachrichtigung | Zeigt im Tooltip an, wenn HA-Updates verfügbar sind |
+| Laufzeit anzeigen | App-Laufzeit im Tray-Tooltip (`2h 15m`) |
+| Reboot-Option | „Windows neu starten…" im Tray-Menü (mit Bestätigung) |
+| MQTT-Status anzeigen | Verbindungsstatus im Tooltip (✓ / ✗) |
+
+Alle Verbindungen können direkt im Einstellungs-Fenster getestet werden.
+
+---
+
+## Tray-Tooltip
+
+Der Tooltip zeigt je nach aktivierten Features einen kombinierten Status:
+
 ```
+SOOHA  |  Screen: EIN  ·  Laufzeit: 2h 15m  ·  MQTT: ✓  ·  Updates: 2 verfügbar
+```
+
+---
+
+## Tray-Menü
+
+| Eintrag | Funktion |
+|---|---|
+| Screen: EIN / AUS | Aktueller Zustand (nicht klickbar) |
+| ⚠ N Update(s) verfügbar | Hinweis wenn HA-Updates bereitstehen (optional) |
+| Screen einschalten | Monitor an + HA State aktualisieren |
+| Screen ausschalten | Monitor aus + HA State aktualisieren |
+| Windows neu starten… | Reboot mit Bestätigungsdialog (optional) |
+| Autostart aktivieren | Eintrag in Windows Registry setzen |
+| Einstellungen… | Konfigurationsfenster öffnen |
+| Beenden | App beenden |
 
 ---
 
@@ -78,18 +120,6 @@ Nach dem ersten Start der App erscheint automatisch:
 - **Name:** SOOHA Screen
 
 Keine YAML-Konfiguration nötig.
-
----
-
-## Tray-Menü
-
-| Eintrag | Funktion |
-|---|---|
-| Screen: EIN / AUS | Aktueller Zustand (nicht klickbar) |
-| Screen einschalten | Monitor an + HA State aktualisieren |
-| Screen ausschalten | Monitor aus + HA State aktualisieren |
-| Autostart aktivieren | Eintrag in Windows Registry setzen |
-| Beenden | App beenden |
 
 ---
 
