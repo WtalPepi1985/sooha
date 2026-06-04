@@ -4,13 +4,14 @@ from tkinter import messagebox, ttk
 
 import config as cfg
 
-BG = "#1e1e1e"
-BG2 = "#2d2d2d"
-BG3 = "#3c3c3c"
-FG = "#cccccc"
+BG     = "#1e1e1e"
+BG2    = "#2d2d2d"
+BG3    = "#3c3c3c"
+FG     = "#cccccc"
 FG_DIM = "#666666"
+FG_SEC = "#888888"
 ACCENT = "#0078d4"
-GREEN = "#107c10"
+GREEN  = "#107c10"
 
 
 class SettingsWindow:
@@ -52,16 +53,16 @@ class SettingsWindow:
         nb = ttk.Notebook(root)
         nb.pack(fill="both", expand=True, padx=16, pady=(14, 8))
 
-        # ── MQTT Tab ─────────────────────────────────────────────────────────
+        # ── MQTT Tab ──────────────────────────────────────────────────────────
         f_mqtt = ttk.Frame(nb)
         nb.add(f_mqtt, text="  MQTT  ")
 
-        self._mqtt_host = self._row(f_mqtt, "Host", data["mqtt_host"], 0)
-        self._mqtt_port = self._row(f_mqtt, "Port", str(data["mqtt_port"]), 1, width=8)
-        self._mqtt_user = self._row(f_mqtt, "Benutzername", data["mqtt_username"], 2)
-        self._mqtt_pass = self._row(f_mqtt, "Passwort", data["mqtt_password"], 3, secret=True)
-        self._device_name = self._row(f_mqtt, "Gerätename", data["device_name"], 4)
-        self._device_id = self._row(f_mqtt, "Geräte-ID", data["device_id"], 5)
+        self._mqtt_host  = self._row(f_mqtt, "Host",          data["mqtt_host"],      0)
+        self._mqtt_port  = self._row(f_mqtt, "Port",          str(data["mqtt_port"]), 1, width=8)
+        self._mqtt_user  = self._row(f_mqtt, "Benutzername",  data["mqtt_username"],  2)
+        self._mqtt_pass  = self._row(f_mqtt, "Passwort",      data["mqtt_password"],  3, secret=True)
+        self._device_name = self._row(f_mqtt, "Gerätename",   data["device_name"],    4)
+        self._device_id  = self._row(f_mqtt, "Geräte-ID",     data["device_id"],      5)
 
         self._btn(f_mqtt, "Verbindung testen", self._test_mqtt, ACCENT).grid(
             row=6, column=1, sticky="w", padx=8, pady=(14, 8)
@@ -71,7 +72,7 @@ class SettingsWindow:
         f_ha = ttk.Frame(nb)
         nb.add(f_ha, text="  Home Assistant  ")
 
-        self._ha_url = self._row(f_ha, "URL", data["ha_url"], 0, width=34)
+        self._ha_url   = self._row(f_ha, "URL",   data["ha_url"],   0, width=34)
         self._ha_token = self._row(f_ha, "Token", data["ha_token"], 1, secret=True, width=34)
 
         self._btn(f_ha, "Verbindung testen", self._test_ha, ACCENT).grid(
@@ -82,30 +83,45 @@ class SettingsWindow:
         f_feat = ttk.Frame(nb)
         nb.add(f_feat, text="  Features  ")
 
-        features = [
-            ("feature_update_notify", "Update-Benachrichtigung", "HA-Updates werden im Tray-Tooltip angezeigt"),
-            ("feature_runtime",       "Laufzeit anzeigen",       "App-Laufzeit im Tray-Tooltip"),
-            ("feature_reboot",        "Reboot-Option",           "\"Windows neu starten\" im Tray-Menü (mit Bestätigung)"),
-            ("feature_mqtt_status",   "MQTT-Status anzeigen",    "Verbindungsstatus im Tray-Tooltip"),
-        ]
         self._feat_vars: dict[str, tk.BooleanVar] = {}
-        for i, (key, label, hint) in enumerate(features):
-            var = tk.BooleanVar(value=data[key])
+        row = 0
+
+        def section(label: str):
+            nonlocal row
+            ttk.Label(f_feat, text=label, foreground=FG_SEC).grid(
+                row=row, column=0, sticky="w", padx=14, pady=(12, 2)
+            )
+            row += 1
+
+        def checkbox(key: str, label: str, hint: str):
+            nonlocal row
+            var = tk.BooleanVar(value=data.get(key, False))
             self._feat_vars[key] = var
-            row = i * 2
             ttk.Checkbutton(f_feat, text=label, variable=var).grid(
-                row=row, column=0, sticky="w", padx=14, pady=(10, 0)
+                row=row, column=0, sticky="w", padx=14, pady=(4, 0)
             )
+            row += 1
             ttk.Label(f_feat, text=f"    {hint}", foreground=FG_DIM).grid(
-                row=row + 1, column=0, sticky="w", padx=14, pady=(0, 2)
+                row=row, column=0, sticky="w", padx=14, pady=(0, 2)
             )
+            row += 1
+
+        section("── HA Sensoren (via MQTT → Home Assistant) ──")
+        checkbox("feature_runtime",      "Windows Uptime",          "→ sensor.sooha_uptime  (z.B. \"2d 5h 30m\")")
+        checkbox("feature_sensor_cpu",   "CPU-Auslastung",          "→ sensor.sooha_cpu  in %  (psutil)")
+        checkbox("feature_sensor_ram",   "RAM-Auslastung",          "→ sensor.sooha_ram  in %  (psutil)")
+        checkbox("feature_update_notify","HA-Update-Benachrichtigung","→ HA-Updates im Tray-Tooltip & Menü")
+
+        section("── Tray-Menü ──")
+        checkbox("feature_reboot",      "Reboot-Option",            "→ \"Windows neu starten\" im Menü (mit Bestätigung)")
+        checkbox("feature_mqtt_status", "MQTT-Status im Tooltip",   "→ Verbindungsstatus ✓ / ✗")
 
         # ── Bottom buttons ────────────────────────────────────────────────────
         bar = tk.Frame(root, bg=BG)
         bar.pack(fill="x", padx=16, pady=(4, 14))
 
-        self._btn(bar, "Speichern", self._save, GREEN).pack(side="right", padx=(4, 0))
-        self._btn(bar, "Abbrechen", self._root.destroy, BG2).pack(side="right")
+        self._btn(bar, "Speichern",  self._save,         GREEN).pack(side="right", padx=(4, 0))
+        self._btn(bar, "Abbrechen",  self._root.destroy, BG2).pack(side="right")
 
     def _row(self, parent, label: str, value: str, row: int, secret=False, width=24):
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="e", padx=(14, 6), pady=7)
@@ -126,7 +142,6 @@ class SettingsWindow:
 
     def _test_mqtt(self):
         import paho.mqtt.client as mqtt_lib
-
         result = {"ok": False, "msg": ""}
         done = threading.Event()
 
@@ -176,14 +191,14 @@ class SettingsWindow:
             return
 
         data = {
-            "mqtt_host":             self._mqtt_host.get().strip(),
-            "mqtt_port":             port,
-            "mqtt_username":         self._mqtt_user.get(),
-            "mqtt_password":         self._mqtt_pass.get(),
-            "device_name":           self._device_name.get().strip(),
-            "device_id":             self._device_id.get().strip(),
-            "ha_url":                self._ha_url.get().strip().rstrip("/"),
-            "ha_token":              self._ha_token.get(),
+            "mqtt_host":    self._mqtt_host.get().strip(),
+            "mqtt_port":    port,
+            "mqtt_username": self._mqtt_user.get(),
+            "mqtt_password": self._mqtt_pass.get(),
+            "device_name":  self._device_name.get().strip(),
+            "device_id":    self._device_id.get().strip(),
+            "ha_url":       self._ha_url.get().strip().rstrip("/"),
+            "ha_token":     self._ha_token.get(),
             **{k: v.get() for k, v in self._feat_vars.items()},
         }
         cfg.save(data)

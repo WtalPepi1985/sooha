@@ -9,14 +9,15 @@ from PIL import Image, ImageDraw
 
 import config as cfg
 import screen as scr
+import sensors
 from mqtt_client import MqttClient
 from settings import SettingsWindow
 
-AUTOSTART_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
-APP_NAME = "SOOHA"
-
-HA_CHECK_INTERVAL = 300   # seconds between HA update checks
-TOOLTIP_INTERVAL  = 30    # seconds between tooltip refreshes
+AUTOSTART_KEY    = r"Software\Microsoft\Windows\CurrentVersion\Run"
+APP_NAME         = "SOOHA"
+SENSOR_INTERVAL  = 60   # seconds between sensor publishes
+HA_CHECK_INTERVAL = 300  # seconds between HA update checks
+TOOLTIP_INTERVAL  = 30   # seconds between tooltip refreshes
 
 
 def make_icon(on: bool) -> Image.Image:
@@ -55,7 +56,7 @@ def set_autostart(enabled: bool):
 class App:
     def __init__(self):
         self._config = cfg.load()
-        self._tray = None
+        self._tray   = None
         self._start_time = time.time()
         self._pending_updates: list = []
         self._settings_win = SettingsWindow(on_saved=self._on_settings_saved)
@@ -69,11 +70,9 @@ class App:
 
     def _make_ha_client(self):
         from ha_client import HaClient
-        url = self._config.get("ha_url", "")
+        url   = self._config.get("ha_url",   "")
         token = self._config.get("ha_token", "")
-        if url and token:
-            return HaClient(url, token)
-        return None
+        return HaClient(url, token) if url and token else None
 
     # ── Screen handlers ───────────────────────────────────────────────────────
 
@@ -95,34 +94,26 @@ class App:
             self._tray.update_menu()
             self._update_tooltip()
 
-    def _runtime_str(self) -> str:
-        elapsed = int(time.time() - self._start_time)
-        h, m = divmod(elapsed // 60, 60)
-        return f"{h}h {m:02d}m"
-
     def _update_tooltip(self):
         if not self._tray:
             return
         c = self._config
         parts = [f"Screen: {'EIN' if scr.is_on() else 'AUS'}"]
         if c.get("feature_runtime"):
-            parts.append(f"Laufzeit: {self._runtime_str()}")
+            parts.append(f"Uptime: {sensors.windows_uptime_str()}")
         if c.get("feature_mqtt_status"):
             parts.append(f"MQTT: {'✓' if self._mqtt.is_connected() else '✗'}")
         if c.get("feature_update_notify") and self._pending_updates:
-            parts.append(f"Updates: {len(self._pending_updates)} verfügbar")
+            parts.append(f"Updates: {len(self._pending_updates)}")
         self._tray.title = "SOOHA  |  " + "  ·  ".join(parts)
 
     def _build_menu(self):
-        c = self._config
-        on = scr.is_on()
+        c        = self._config
+        on       = scr.is_on()
         autostart = is_autostart_enabled()
 
-        items = [
-            pystray.MenuItem(f"Screen: {'EIN' if on else 'AUS'}", None, enabled=False),
-        ]
+        items = [pystray.MenuItem(f"Screen: {'EIN' if on else 'AUS'}", None, enabled=False)]
 
-        # Update hint — only show when pending updates exist
         if c.get("feature_update_notify") and self._pending_updates:
             items.append(pystray.MenuItem(
                 f"⚠ {len(self._pending_updates)} Update(s) verfügbar", None, enabled=False
@@ -130,8 +121,8 @@ class App:
 
         items += [
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Screen einschalten",  lambda: self._handle_turn_on()),
-            pystray.MenuItem("Screen ausschalten",  lambda: self._handle_turn_off()),
+            pystray.MenuItem("Screen einschalten", lambda: self._handle_turn_on()),
+            pystray.MenuItem("Screen ausschalten", lambda: self._handle_turn_off()),
             pystray.Menu.SEPARATOR,
         ]
 
@@ -170,36 +161,60 @@ class App:
 
     def _on_settings_saved(self, new_config: dict):
         self._config = new_config
+        self._mqtt.update_config(new_config)
         self._ha = self._make_ha_client()
         self._update_tooltip()
 
     # ── Background threads ────────────────────────────────────────────────────
 
     def _woken_watcher(self):
-        """Polls every 2s whether user input woke the screen, syncs state + HA."""
         while True:
             time.sleep(2)
             if scr.check_woken():
                 self._mqtt.publish_state(True)
                 self._refresh_tray()
 
+    def _collect_sensor_values(self) -> dict:
+        c = self._config
+        values = {}
+        if c.get("feature_runtime"):
+            values["uptime"] = sensors.windows_uptime_str()
+        if c.get("feature_sensor_cpu"):
+            values["cpu"] = sensors.cpu_percent()
+        if c.get("feature_sensor_ram"):
+            values["ram"] = sensors.ram_percent()
+        return values
+
     def _ticker(self):
-        last_ha_check = 0.0
+        last_ha_check     = 0.0
+        last_sensor_push  = 0.0
         while True:
             time.sleep(TOOLTIP_INTERVAL)
+            now = time.time()
+
             self._update_tooltip()
+
+            # Sensor publish
+            if now - last_sensor_push >= SENSOR_INTERVAL:
+                values = self._collect_sensor_values()
+                if values and self._mqtt.is_connected():
+                    self._mqtt.publish_sensors(values)
+                last_sensor_push = now
+
+            # HA update check
             if self._ha and self._config.get("feature_update_notify"):
-                if time.time() - last_ha_check >= HA_CHECK_INTERVAL:
+                if now - last_ha_check >= HA_CHECK_INTERVAL:
                     self._pending_updates = self._ha.get_pending_updates()
-                    last_ha_check = time.time()
+                    last_ha_check = now
                     self._update_tooltip()
-                    self._tray.update_menu()
+                    if self._tray:
+                        self._tray.update_menu()
 
     # ── Entry point ───────────────────────────────────────────────────────────
 
     def run(self):
         self._mqtt.start()
-        threading.Thread(target=self._ticker, daemon=True).start()
+        threading.Thread(target=self._ticker,       daemon=True).start()
         threading.Thread(target=self._woken_watcher, daemon=True).start()
 
         self._tray = pystray.Icon(
