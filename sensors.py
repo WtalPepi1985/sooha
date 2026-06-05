@@ -37,17 +37,3 @@ def ram_percent() -> float:
         return 0.0
 
 
-def windows_update_count() -> int:
-    """Returns number of pending Windows updates (runs PowerShell COM query, may take ~10s)."""
-    try:
-        import subprocess
-        result = subprocess.run(
-            ["powershell", "-WindowStyle", "Hidden", "-NonInteractive", "-Command",
-             "(New-Object -ComObject Microsoft.Update.Session)"
-             ".CreateUpdateSearcher().Search('IsInstalled=0').Updates.Count"],
-            capture_output=True, text=True, timeout=60,
-            creationflags=0x08000000,  # CREATE_NO_WINDOW
-        )
-        return int(result.stdout.strip())
-    except Exception:
-        return -1  # -1 = check failed

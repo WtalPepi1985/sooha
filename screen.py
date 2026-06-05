@@ -27,6 +27,13 @@ _GetDesktopWindow.restype = ctypes.c_void_p
 _GetTickCount64 = ctypes.windll.kernel32.GetTickCount64
 _GetTickCount64.restype = ctypes.c_ulonglong
 
+# mouse_event for waking the monitor (deprecated but simpler than SendInput; still works on all Windows versions)
+_mouse_event = _user32.mouse_event
+_mouse_event.restype  = None
+_mouse_event.argtypes = [ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong]
+
+MOUSEEVENTF_MOVE = 0x0001
+
 
 class _LastInputInfo(ctypes.Structure):
     _fields_ = [("cbSize", ctypes.c_uint), ("dwTime", ctypes.c_uint)]
@@ -61,6 +68,9 @@ def turn_off():
 
 def turn_on():
     global _state
+    # A tiny mouse nudge is needed to wake a monitor that's in hardware sleep —
+    # SC_MONITORPOWER=-1 alone doesn't always trigger the display driver.
+    _mouse_event(MOUSEEVENTF_MOVE, 1, 0, 0, 0)
     _SendMessage(_GetDesktopWindow(), WM_SYSCOMMAND, SC_MONITORPOWER, -1)
     _state = True
 

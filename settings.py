@@ -80,17 +80,6 @@ class SettingsWindow:
             row=6, column=1, sticky="w", padx=8, pady=(14, 8)
         )
 
-        # ── Home Assistant Tab ────────────────────────────────────────────────
-        f_ha = ttk.Frame(nb)
-        nb.add(f_ha, text="  Home Assistant  ")
-
-        self._ha_url   = self._row(f_ha, "URL",   data["ha_url"],   0, width=34)
-        self._ha_token = self._row(f_ha, "Token", data["ha_token"], 1, secret=True, width=34)
-
-        self._btn(f_ha, "Verbindung testen", self._test_ha, ACCENT).grid(
-            row=2, column=1, sticky="w", padx=8, pady=(14, 8)
-        )
-
         # ── Features Tab ─────────────────────────────────────────────────────
         f_feat = ttk.Frame(nb)
         nb.add(f_feat, text="  Features  ")
@@ -119,10 +108,9 @@ class SettingsWindow:
             row += 1
 
         section("── HA Sensoren (via MQTT → Home Assistant) ──")
-        checkbox("feature_runtime",            "Windows Uptime",        "→ sensor.sooha_uptime  (z.B. \"2d 5h 30m\")")
-        checkbox("feature_sensor_cpu",         "CPU-Auslastung",        "→ sensor.sooha_cpu  in %  (psutil)")
-        checkbox("feature_sensor_ram",         "RAM-Auslastung",        "→ sensor.sooha_ram  in %  (psutil)")
-        checkbox("feature_sensor_win_updates", "Windows Updates",       "→ sensor.sooha_win_updates  (Anzahl ausstehender Updates, alle 2h)")
+        checkbox("feature_runtime",    "Windows Uptime",  "→ sensor.<device_id>_uptime  (z.B. \"2d 5h 30m\")")
+        checkbox("feature_sensor_cpu", "CPU-Auslastung",  "→ sensor.<device_id>_cpu  in %  (psutil)")
+        checkbox("feature_sensor_ram", "RAM-Auslastung",  "→ sensor.<device_id>_ram  in %  (psutil)")
 
         section("── Tray-Menü ──")
         checkbox("feature_reboot",      "Reboot-Option",            "→ \"Windows neu starten\" im Menü (mit Bestätigung)")
@@ -180,19 +168,6 @@ class SettingsWindow:
         else:
             messagebox.showerror("MQTT Test", result["msg"] or "Timeout – kein Broker erreichbar", parent=self._root)
 
-    def _test_ha(self):
-        import requests as req
-        url = self._ha_url.get().rstrip("/") + "/api/"
-        try:
-            r = req.get(url, headers={"Authorization": f"Bearer {self._ha_token.get()}"}, timeout=5)
-            if r.status_code == 200:
-                ver = r.json().get("version", "?")
-                messagebox.showinfo("HA Test", f"Verbunden!\nHome Assistant {ver}", parent=self._root)
-            else:
-                messagebox.showerror("HA Test", f"HTTP {r.status_code}", parent=self._root)
-        except Exception as e:
-            messagebox.showerror("HA Test", str(e), parent=self._root)
-
     # ── Save ──────────────────────────────────────────────────────────────────
 
     def _save(self):
@@ -203,14 +178,12 @@ class SettingsWindow:
             return
 
         data = {
-            "mqtt_host":    self._mqtt_host.get().strip(),
-            "mqtt_port":    port,
+            "mqtt_host":     self._mqtt_host.get().strip(),
+            "mqtt_port":     port,
             "mqtt_username": self._mqtt_user.get(),
             "mqtt_password": self._mqtt_pass.get(),
-            "device_name":  self._device_name.get().strip(),
-            "device_id":    self._device_id.get().strip(),
-            "ha_url":       self._ha_url.get().strip().rstrip("/"),
-            "ha_token":     self._ha_token.get(),
+            "device_name":   self._device_name.get().strip(),
+            "device_id":     self._device_id.get().strip(),
             **{k: v.get() for k, v in self._feat_vars.items()},
         }
         cfg.save(data)

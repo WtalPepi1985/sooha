@@ -10,8 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Icon-Datei (`sooha.ico`) für PyInstaller Build
 - Mehrere Monitore unterstützen
+
+---
+
+## [0.4.0] - 2026-06-05
+
+### Fixed
+- **Screen einschalten** — `turn_on()` sendet jetzt zuerst ein `mouse_event(MOUSEEVENTF_MOVE)` bevor `SC_MONITORPOWER=-1` geschickt wird. Nur `SendMessage` reicht nicht bei Monitoren die in Hardware-Sleep sind.
+- **Multi-Gerät MQTT** — Alle MQTT-Topics und die Client-ID werden jetzt aus der `device_id` generiert (`sooha/<device_id>/...`). Zwei SOOHA-Instanzen auf verschiedenen PCs brauchen jetzt nur unterschiedliche `device_id` (z.B. `sooha_flur`, `sooha_buero`) — keine gegenseitigen Konflikte mehr.
+
+### Removed
+- **HA Token + Update-Features** komplett entfernt — `ha_client.py`, HA-Tab in Einstellungen, `ha_url`/`ha_token` aus Config, `feature_sensor_win_updates` und `WIN_UPDATE_INTERVAL` aus Code
+- Einstellungen haben jetzt nur noch zwei Tabs: MQTT und Features
+
+### Changed
+- MQTT `client_id` ist jetzt `sooha_<device_id>` statt fix `"sooha"`
+- Sensor-Discovery-Topics und `unique_id`s enthalten jetzt die `device_id` (z.B. `sensor.sooha_flur_uptime`)
+- `clean_session=True` im MQTT-Client
 
 ---
 

@@ -9,22 +9,19 @@ else:
     FILE = Path(__file__).parent / "config.json"
 
 DEFAULTS = {
-    "mqtt_host":          "10.10.4.211",
-    "mqtt_port":          1883,
-    "mqtt_username":      "",
-    "mqtt_password":      "",
-    "device_id":          "sooha_screen",
-    "device_name":        "SOOHA Screen",
-    "ha_url":             "http://10.10.4.21:8123",
-    "ha_token":           "",
+    "mqtt_host":     "10.10.4.211",
+    "mqtt_port":     1883,
+    "mqtt_username": "",
+    "mqtt_password": "",
+    "device_id":     "sooha_screen",
+    "device_name":   "SOOHA Screen",
     # Tray-only features
-    "feature_reboot":       False,
-    "feature_mqtt_status":  True,
+    "feature_reboot":      False,
+    "feature_mqtt_status": True,
     # MQTT sensor features (published to HA)
-    "feature_runtime":             True,   # Windows Uptime sensor
-    "feature_sensor_cpu":          False,  # CPU % sensor
-    "feature_sensor_ram":          False,  # RAM % sensor
-    "feature_sensor_win_updates":  False,  # Windows Update count sensor
+    "feature_runtime":    True,   # Windows Uptime sensor
+    "feature_sensor_cpu": False,  # CPU % sensor
+    "feature_sensor_ram": False,  # RAM % sensor
 }
 
 

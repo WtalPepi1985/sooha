@@ -17,11 +17,10 @@ import sensors
 from mqtt_client import MqttClient
 from settings import SettingsWindow
 
-AUTOSTART_KEY   = r"Software\Microsoft\Windows\CurrentVersion\Run"
-APP_NAME        = "SOOHA"
-SENSOR_INTERVAL     = 60    # seconds between sensor publishes
-TOOLTIP_INTERVAL    = 30    # seconds between tooltip refreshes
-WIN_UPDATE_INTERVAL = 7200  # seconds between Windows Update checks (2h)
+AUTOSTART_KEY    = r"Software\Microsoft\Windows\CurrentVersion\Run"
+APP_NAME         = "SOOHA"
+SENSOR_INTERVAL  = 60   # seconds between sensor publishes
+TOOLTIP_INTERVAL = 30   # seconds between tooltip refreshes
 
 
 def make_icon(on: bool) -> Image.Image:
@@ -67,9 +66,8 @@ def set_autostart(enabled: bool):
 
 class App:
     def __init__(self):
-        self._config      = cfg.load()
-        self._tray        = None
-        self._win_updates = None  # cached Windows update count
+        self._config       = cfg.load()
+        self._tray         = None
         self._settings_win = SettingsWindow(on_saved=self._on_settings_saved)
 
         self._mqtt = MqttClient(
@@ -177,16 +175,6 @@ class App:
                 self._mqtt.publish_state(True)
                 self._refresh_tray()
 
-    def _win_update_watcher(self):
-        """Checks Windows Updates every 2h in background (slow PowerShell query)."""
-        while True:
-            if self._config.get("feature_sensor_win_updates"):
-                count = sensors.windows_update_count()
-                self._win_updates = count
-                if self._mqtt.is_connected() and count >= 0:
-                    self._mqtt.publish_sensors({"win_updates": count})
-            time.sleep(WIN_UPDATE_INTERVAL)
-
     def _collect_sensor_values(self) -> dict:
         c = self._config
         values = {"version": sensors.sooha_version()}
@@ -213,9 +201,8 @@ class App:
 
     def run(self):
         self._mqtt.start()
-        threading.Thread(target=self._ticker,            daemon=True).start()
-        threading.Thread(target=self._woken_watcher,     daemon=True).start()
-        threading.Thread(target=self._win_update_watcher, daemon=True).start()
+        threading.Thread(target=self._ticker,        daemon=True).start()
+        threading.Thread(target=self._woken_watcher, daemon=True).start()
 
         self._tray = pystray.Icon(
             APP_NAME,

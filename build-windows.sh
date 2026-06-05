@@ -8,7 +8,7 @@ WINEPREFIX=/opt/wine-python
 PYINSTALLER="C:\\\\Python311\\\\Scripts\\\\pyinstaller.exe"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-SOURCES=(main.py mqtt_client.py screen.py sensors.py ha_client.py config.py settings.py version.py)
+SOURCES=(main.py mqtt_client.py screen.py sensors.py config.py settings.py version.py)
 ASSETS=(assets/Systemtrayicon.png assets/Programmicon.png assets/icon.ico)
 
 # ── Version aus version.py lesen ─────────────────────────────────────────────
