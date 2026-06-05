@@ -8,6 +8,10 @@ import pystray
 from PIL import Image, ImageDraw
 
 import config as cfg
+
+def _asset(name: str) -> str:
+    base = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, 'assets', name)
 import screen as scr
 import sensors
 from mqtt_client import MqttClient
@@ -21,13 +25,21 @@ WIN_UPDATE_INTERVAL = 7200  # seconds between Windows Update checks (2h)
 
 
 def make_icon(on: bool) -> Image.Image:
-    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    color = (80, 200, 80) if on else (120, 120, 120)
-    draw.rectangle([8, 8, 56, 44], outline=color, width=4)
-    draw.rectangle([28, 44, 36, 54], fill=color)
-    draw.rectangle([20, 54, 44, 58], fill=color)
-    return img
+    try:
+        img = Image.open(_asset('Systemtrayicon.png')).convert('RGBA').resize((64, 64))
+        if not on:
+            r, g, b, a = img.split()
+            gray = r.point(lambda x: int(x * 0.4))
+            img = Image.merge('RGBA', (gray, gray, gray, a))
+        return img
+    except Exception:
+        img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        color = (80, 200, 80) if on else (120, 120, 120)
+        draw.rectangle([8, 8, 56, 44], outline=color, width=4)
+        draw.rectangle([28, 44, 36, 54], fill=color)
+        draw.rectangle([20, 54, 44, 58], fill=color)
+        return img
 
 
 def is_autostart_enabled() -> bool:

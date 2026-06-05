@@ -9,6 +9,7 @@ PYINSTALLER="C:\\\\Python311\\\\Scripts\\\\pyinstaller.exe"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 SOURCES=(main.py mqtt_client.py screen.py sensors.py ha_client.py config.py settings.py version.py)
+ASSETS=(assets/Systemtrayicon.png assets/Programmicon.png assets/icon.ico)
 
 # ── Version aus version.py lesen ─────────────────────────────────────────────
 VERSION=$(python3 -c "import re; print(re.search(r'\"(.+?)\"', open('$SCRIPT_DIR/version.py').read()).group(1))")
@@ -41,10 +42,14 @@ echo "  OK"
 
 # ── Copy sources ──────────────────────────────────────────────────────────────
 echo "[2/4] Copying source files..."
-ssh proxmox "pct exec $CONTAINER -- bash -c 'mkdir -p $BUILD_DIR'"
+ssh proxmox "pct exec $CONTAINER -- bash -c 'mkdir -p $BUILD_DIR/assets'"
 for f in "${SOURCES[@]}"; do
   ssh proxmox "pct exec $CONTAINER -- bash -c 'cat > $BUILD_DIR/$f'" < "$SCRIPT_DIR/$f"
   echo "  ✓ $f"
+done
+for a in "${ASSETS[@]}"; do
+  ssh proxmox "pct exec $CONTAINER -- bash -c 'cat > $BUILD_DIR/$a'" < "$SCRIPT_DIR/$a"
+  echo "  ✓ $a"
 done
 
 # ── Optional: update pip packages ────────────────────────────────────────────
@@ -71,6 +76,8 @@ BUILD_LOG=$(ssh proxmox "pct exec $CONTAINER -- bash -c '
   rm -rf build dist ${EXE_NAME}.spec
   DISPLAY=:99 wine $PYINSTALLER \
     --onefile --windowed --name ${EXE_NAME} \
+    --icon assets/icon.ico \
+    --add-data "assets;assets" \
     --hidden-import pystray._win32 \
     --hidden-import PIL._tkinter_finder \
     main.py 2>&1

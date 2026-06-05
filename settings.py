@@ -1,8 +1,14 @@
+import os
+import sys
 import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 
 import config as cfg
+
+def _asset(name: str) -> str:
+    base = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, 'assets', name)
 
 BG     = "#1e1e1e"
 BG2    = "#2d2d2d"
@@ -29,6 +35,12 @@ class SettingsWindow:
     def _run(self):
         self._root = tk.Tk()
         self._root.title("SOOHA – Einstellungen")
+        try:
+            from PIL import ImageTk, Image
+            img = ImageTk.PhotoImage(Image.open(_asset('Programmicon.png')).resize((32, 32)))
+            self._root.iconphoto(True, img)
+        except Exception:
+            pass
         self._root.configure(bg=BG)
         self._root.resizable(False, False)
         self._build_ui(cfg.load())
