@@ -4,7 +4,7 @@
 
 # SOOHA – Screen Off Over Home Assistant
 
-Windows Tray-App, die einen Monitor über Home Assistant ein- und ausschalten kann — und gleichzeitig Windows-Systemdaten als Sensoren an HA meldet.
+Windows Tray-App, die einen Monitor über Home Assistant ein- und ausschalten kann, Windows-Systemdaten als Sensoren an HA meldet und Störmeldungen als Benachrichtigungen auf dem PC anzeigt.
 
 ---
 
@@ -28,14 +28,66 @@ Beim Start sendet SOOHA eine MQTT Discovery Message — HA erkennt alle Entities
 
 | Entity | Typ | Beschreibung |
 |---|---|---|
-| `switch.sooha_screen` | Switch | Monitor ein-/ausschalten |
-| `sensor.sooha_version` | Sensor | Laufende SOOHA-Version |
-| `sensor.sooha_uptime` | Sensor | Windows Uptime (z.B. „2d 5h 30m") |
-| `sensor.sooha_cpu` | Sensor | CPU-Auslastung in % (optional) |
-| `sensor.sooha_ram` | Sensor | RAM-Auslastung in % (optional) |
-| `sensor.sooha_win_updates` | Sensor | Ausstehende Windows-Updates (optional, alle 2h) |
+| `switch.<device_id>` | Switch | Monitor ein-/ausschalten |
+| `text.<device_id>_benachrichtigung` | Text | Nachricht eingeben → sofort als Notification anzeigen |
+| `sensor.<device_id>_version` | Sensor | Laufende SOOHA-Version |
+| `sensor.<device_id>_uptime` | Sensor | Windows Uptime (z.B. „2d 5h 30m") — optional |
+| `sensor.<device_id>_cpu` | Sensor | CPU-Auslastung in % — optional |
+| `sensor.<device_id>_ram` | Sensor | RAM-Auslastung in % — optional |
 
 Alle Entities zeigen **unavailable** wenn SOOHA nicht läuft.
+
+> `<device_id>` ist die in den Einstellungen konfigurierte Geräte-ID (Standard: `sooha_screen`).
+
+---
+
+## Benachrichtigungen / Störmeldungen
+
+SOOHA kann Nachrichten von HA empfangen und auf dem PC anzeigen — als einfacher Toast oder als Quittierungsdialog.
+
+**MQTT-Topic:** `sooha/<device_id>/notify`
+
+**Payload — plain text:**
+```
+Pumpe Heizung ausgefallen!
+```
+
+**Payload — JSON mit eigenem Titel:**
+```json
+{"title": "Störmeldung", "message": "Pumpe Heizung ausgefallen!"}
+```
+
+**HA-Automation Beispiel:**
+```yaml
+service: mqtt.publish
+data:
+  topic: "sooha/sooha_screen/notify"
+  payload: '{"title": "Störmeldung", "message": "Pumpe Heizung ausgefallen!"}'
+```
+
+Oder einfacher — Text direkt in HA in die `text.<device_id>_benachrichtigung` Entity eingeben.
+
+### Quittierungspflicht
+
+Mit aktivierter Option **Quittierungspflicht** in den Settings erscheint statt eines Toasts ein Dialog, der offen bleibt bis der User auf **Quittieren** klickt.
+
+Nach der Quittierung published SOOHA auf `sooha/<device_id>/notify/ack` (Payload: `quittiert`) — HA-Automationen können darauf reagieren:
+
+```yaml
+trigger:
+  platform: mqtt
+  topic: "sooha/sooha_screen/notify/ack"
+action:
+  # z.B. Alarm stoppen, Logbuch-Eintrag
+```
+
+---
+
+## Multi-Device
+
+Mehrere SOOHA-Instanzen auf verschiedenen PCs sind möglich — jede braucht eine eigene **Geräte-ID** in den Einstellungen (z.B. `sooha_flur`, `sooha_buero`). Alle MQTT-Topics und HA-Entities werden automatisch danach benannt.
+
+> **Hinweis:** Bei einer Änderung der Geräte-ID müssen die alten HA-Entities manuell gelöscht werden.
 
 ---
 
@@ -69,14 +121,7 @@ Alle Entities zeigen **unavailable** wenn SOOHA nicht läuft.
 | Port | Standard: `1883` |
 | Benutzername / Passwort | Falls der Broker Auth erfordert |
 | Gerätename | Anzeigename in Home Assistant |
-| Geräte-ID | Technische ID (eindeutig, keine Leerzeichen) |
-
-### Tab: Home Assistant
-
-| Feld | Beschreibung |
-|---|---|
-| URL | z.B. `http://homeassistant.local:8123` |
-| Token | Long-Lived Access Token aus HA |
+| Geräte-ID | Technische ID (eindeutig pro Gerät, keine Leerzeichen) |
 
 ### Tab: Features
 
@@ -84,10 +129,15 @@ Alle Entities zeigen **unavailable** wenn SOOHA nicht läuft.
 
 | Feature | Entity | Intervall |
 |---|---|---|
-| Windows Uptime | `sensor.sooha_uptime` | 60s |
-| CPU-Auslastung | `sensor.sooha_cpu` | 60s |
-| RAM-Auslastung | `sensor.sooha_ram` | 60s |
-| Windows Updates | `sensor.sooha_win_updates` | 2h |
+| Windows Uptime | `sensor.<id>_uptime` | 60s |
+| CPU-Auslastung | `sensor.<id>_cpu` | 60s |
+| RAM-Auslastung | `sensor.<id>_ram` | 60s |
+
+**Benachrichtigungen**
+
+| Feature | Beschreibung |
+|---|---|
+| Quittierungspflicht | Dialog statt Toast — bleibt offen bis Quittieren geklickt, sendet Ack an HA |
 
 **Tray-Menü**
 
