@@ -112,6 +112,11 @@ class SettingsWindow:
         checkbox("feature_sensor_cpu", "CPU-Auslastung",  "→ sensor.<device_id>_cpu  in %  (psutil)")
         checkbox("feature_sensor_ram", "RAM-Auslastung",  "→ sensor.<device_id>_ram  in %  (psutil)")
 
+        section("── Benachrichtigungen ──")
+        checkbox("feature_notify_confirm", "Quittierungspflicht",
+                 "→ Meldung als Dialog anzeigen — bleibt offen bis \"Quittieren\" gedrückt wird\n"
+                 "    HA bekommt Quittierung auf sooha/<id>/notify/ack")
+
         section("── Tray-Menü ──")
         checkbox("feature_reboot",      "Reboot-Option",            "→ \"Windows neu starten\" im Menü (mit Bestätigung)")
         checkbox("feature_mqtt_status", "MQTT-Status im Tooltip",   "→ Verbindungsstatus ✓ / ✗")

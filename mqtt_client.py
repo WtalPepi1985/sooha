@@ -72,6 +72,7 @@ class MqttClient:
         self._avail_topic        = f"sooha/{dev_id}/status"
         self._notify_topic       = f"sooha/{dev_id}/notify"
         self._notify_state_topic = f"sooha/{dev_id}/notify/state"
+        self._notify_ack_topic   = f"sooha/{dev_id}/notify/ack"
         self._notify_text_disc   = f"homeassistant/text/{dev_id}_notify/config"
         self._sensor_state       = {k: f"sooha/{dev_id}/sensor/{k}/state" for k in SENSOR_DEFS}
         self._sensor_disc        = {k: f"homeassistant/sensor/{dev_id}_{k}/config" for k in SENSOR_DEFS}
@@ -112,9 +113,8 @@ class MqttClient:
             title   = "SOOHA"
             message = raw
         if message:
-            self._on_notify(title, message)
-            # Echo back so the HA text entity shows the last sent message
             self._client.publish(self._notify_state_topic, message, retain=True)
+            self._on_notify(title, message)
 
     # ── Discovery ─────────────────────────────────────────────────────────────
 
@@ -178,6 +178,10 @@ class MqttClient:
         for key, value in values.items():
             if key in self._sensor_state:
                 self._client.publish(self._sensor_state[key], str(value), retain=True)
+
+    def publish_notify_ack(self):
+        self._client.publish(self._notify_ack_topic, "quittiert", retain=False)
+        self._client.publish(self._notify_state_topic, "", retain=True)
 
     def publish_offline(self):
         self._client.publish(self._avail_topic, "offline", retain=True)

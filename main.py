@@ -80,8 +80,47 @@ class App:
     # ── Notify handler ────────────────────────────────────────────────────────
 
     def _handle_notify(self, title: str, message: str):
-        if self._tray:
+        if self._config.get("feature_notify_confirm"):
+            threading.Thread(target=self._show_confirm_dialog, args=(title, message), daemon=True).start()
+        elif self._tray:
             self._tray.notify(message, title)
+
+    def _show_confirm_dialog(self, title: str, message: str):
+        import tkinter as tk
+        root = tk.Tk()
+        root.title(title)
+        root.configure(bg="#1e1e1e")
+        root.attributes("-topmost", True)
+        root.resizable(False, False)
+        try:
+            from PIL import ImageTk, Image
+            img = ImageTk.PhotoImage(Image.open(_asset("Programmicon.png")).resize((32, 32)))
+            root.iconphoto(True, img)
+        except Exception:
+            pass
+
+        tk.Label(root, text=f"⚠  {title}", bg="#c42b1c", fg="white",
+                 font=("Segoe UI", 13, "bold"), padx=20, pady=12).pack(fill="x")
+        tk.Label(root, text=message, bg="#1e1e1e", fg="#cccccc",
+                 font=("Segoe UI", 11), wraplength=400, justify="left",
+                 padx=24, pady=20).pack(anchor="w")
+
+        def quittieren():
+            self._mqtt.publish_notify_ack()
+            root.destroy()
+
+        tk.Button(root, text="✓  Quittieren", command=quittieren,
+                  bg="#107c10", fg="white", activebackground="#0e6b0e", activeforeground="white",
+                  font=("Segoe UI", 11, "bold"), relief="flat",
+                  padx=20, pady=10, cursor="hand2", bd=0).pack(pady=(0, 20))
+
+        root.update_idletasks()
+        w, h = root.winfo_reqwidth(), root.winfo_reqheight()
+        sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
+        root.geometry(f"{w}x{h}+{(sw - w) // 2}+{(sh - h) // 2}")
+        root.lift()
+        root.focus_force()
+        root.mainloop()
 
     # ── Screen handlers ───────────────────────────────────────────────────────
 

@@ -16,8 +16,9 @@ DEFAULTS = {
     "device_id":     "sooha_screen",
     "device_name":   "SOOHA Screen",
     # Tray-only features
-    "feature_reboot":      False,
-    "feature_mqtt_status": True,
+    "feature_reboot":         False,
+    "feature_mqtt_status":    True,
+    "feature_notify_confirm": False,  # show confirm dialog instead of toast
     # MQTT sensor features (published to HA)
     "feature_runtime":    True,   # Windows Uptime sensor
     "feature_sensor_cpu": False,  # CPU % sensor

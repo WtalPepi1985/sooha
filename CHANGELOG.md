@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.3] - 2026-06-05
+
+### Added
+- **Quittierungspflicht** (`feature_notify_confirm` in Settings) — statt Toast erscheint ein
+  always-on-top Dialog mit rotem Header, der offen bleibt bis "Quittieren" geklickt wird.
+  Nach Quittierung: publish auf `sooha/<device_id>/notify/ack` (Payload: `quittiert`) und
+  Text-Entity wird geleert. HA-Automationen können auf das Ack-Topic triggern.
+
+---
+
 ## [0.4.2] - 2026-06-05
 
 ### Added
