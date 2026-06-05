@@ -43,10 +43,11 @@ FEATURE_MAP = {
 
 
 class MqttClient:
-    def __init__(self, config: dict, on_turn_on, on_turn_off):
+    def __init__(self, config: dict, on_turn_on, on_turn_off, on_notify=None):
         self._config      = config
         self._on_turn_on  = on_turn_on
         self._on_turn_off = on_turn_off
+        self._on_notify   = on_notify
         self._connected   = False
 
         dev_id = config.get("device_id", "sooha_screen")
@@ -69,6 +70,7 @@ class MqttClient:
         self._state_topic   = f"sooha/{dev_id}/screen/state"
         self._command_topic = f"sooha/{dev_id}/screen/set"
         self._avail_topic   = f"sooha/{dev_id}/status"
+        self._notify_topic  = f"sooha/{dev_id}/notify"
         self._sensor_state  = {k: f"sooha/{dev_id}/sensor/{k}/state" for k in SENSOR_DEFS}
         self._sensor_disc   = {k: f"homeassistant/sensor/{dev_id}_{k}/config" for k in SENSOR_DEFS}
 
@@ -81,16 +83,33 @@ class MqttClient:
             self._publish_switch_discovery()
             self._publish_sensor_discovery()
             client.subscribe(self._command_topic)
+            client.subscribe(self._notify_topic)
 
     def _on_disconnect(self, client, userdata, rc):
         self._connected = False
 
     def _on_message(self, client, userdata, msg):
+        if msg.topic == self._notify_topic:
+            self._handle_notify(msg.payload.decode().strip())
+            return
         payload = msg.payload.decode().strip().upper()
         if payload == "ON":
             self._on_turn_on()
         elif payload == "OFF":
             self._on_turn_off()
+
+    def _handle_notify(self, raw: str):
+        if not self._on_notify:
+            return
+        try:
+            data = json.loads(raw)
+            title   = data.get("title",   "SOOHA")
+            message = data.get("message", "")
+        except (json.JSONDecodeError, AttributeError):
+            title   = "SOOHA"
+            message = raw
+        if message:
+            self._on_notify(title, message)
 
     # ── Discovery ─────────────────────────────────────────────────────────────
 

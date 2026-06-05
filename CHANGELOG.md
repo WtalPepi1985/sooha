@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.1] - 2026-06-05
+
+### Added
+- **Toast-Benachrichtigungen** — MQTT-Topic `sooha/<device_id>/notify` zeigt eine Windows-Benachrichtigung an
+  - Plain text: `Pumpe ausgefallen!` → Titel "SOOHA", Text der Payload
+  - JSON: `{"title": "Störmeldung", "message": "Pumpe ausgefallen!"}` → eigener Titel möglich
+  - HA-Nutzung: `mqtt.publish` in einer Automation (kein Discovery nötig)
+
+---
+
 ## [0.4.0] - 2026-06-05
 
 ### Fixed

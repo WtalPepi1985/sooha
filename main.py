@@ -74,7 +74,14 @@ class App:
             self._config,
             on_turn_on=self._handle_turn_on,
             on_turn_off=self._handle_turn_off,
+            on_notify=self._handle_notify,
         )
+
+    # ── Notify handler ────────────────────────────────────────────────────────
+
+    def _handle_notify(self, title: str, message: str):
+        if self._tray:
+            self._tray.notify(message, title)
 
     # ── Screen handlers ───────────────────────────────────────────────────────
 
