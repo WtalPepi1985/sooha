@@ -21,8 +21,10 @@ GREEN  = "#107c10"
 
 
 class SettingsWindow:
-    def __init__(self, on_saved=None):
-        self._on_saved = on_saved
+    def __init__(self, on_saved=None, on_restart=None, on_quit=None):
+        self._on_saved   = on_saved
+        self._on_restart = on_restart
+        self._on_quit    = on_quit
         self._root = None
 
     def open(self):
@@ -194,5 +196,54 @@ class SettingsWindow:
         cfg.save(data)
         if self._on_saved:
             self._on_saved(data)
-        messagebox.showinfo("Gespeichert", "Einstellungen gespeichert.\nNeustart empfohlen.", parent=self._root)
+
+        action = self._ask_restart_action()
         self._root.destroy()
+        if action == "restart" and self._on_restart:
+            self._on_restart()
+        elif action == "quit" and self._on_quit:
+            self._on_quit()
+
+    def _ask_restart_action(self) -> str:
+        dlg = tk.Toplevel(self._root)
+        dlg.title("Einstellungen gespeichert")
+        dlg.configure(bg=BG)
+        dlg.resizable(False, False)
+        dlg.attributes("-topmost", True)
+        dlg.transient(self._root)
+        dlg.grab_set()
+
+        try:
+            from PIL import ImageTk, Image
+            img = ImageTk.PhotoImage(Image.open(_asset("Programmicon.png")).resize((32, 32)))
+            dlg.iconphoto(True, img)
+        except Exception:
+            pass
+
+        tk.Label(dlg, text="Einstellungen gespeichert.", bg=BG, fg="#ffffff",
+                 font=("Segoe UI", 12, "bold"), padx=24, pady=(18, 4)).pack(anchor="w")
+        tk.Label(dlg, text="Was soll SOOHA jetzt tun?",
+                 bg=BG, fg=FG_SEC, font=("Segoe UI", 10), padx=24, pady=(0, 16)).pack(anchor="w")
+
+        bar = tk.Frame(dlg, bg=BG)
+        bar.pack(fill="x", padx=16, pady=(0, 16))
+
+        result = ["continue"]
+
+        def choose(val):
+            result[0] = val
+            dlg.destroy()
+
+        self._btn(bar, "Neu starten",   lambda: choose("restart"),  GREEN).pack(side="left", padx=(0, 6))
+        self._btn(bar, "Beenden",       lambda: choose("quit"),     "#c42b1c").pack(side="left")
+        self._btn(bar, "Weiter laufen", lambda: choose("continue"), BG2).pack(side="right")
+
+        dlg.update_idletasks()
+        w, h = dlg.winfo_reqwidth(), dlg.winfo_reqheight()
+        px = self._root.winfo_x() + (self._root.winfo_width()  - w) // 2
+        py = self._root.winfo_y() + (self._root.winfo_height() - h) // 2
+        dlg.geometry(f"{w}x{h}+{px}+{py}")
+        dlg.lift()
+        dlg.focus_force()
+        dlg.wait_window()
+        return result[0]

@@ -66,9 +66,14 @@ def set_autostart(enabled: bool):
 
 class App:
     def __init__(self):
+        self._mutex_handle = self._ensure_single_instance()
         self._config       = cfg.load()
         self._tray         = None
-        self._settings_win = SettingsWindow(on_saved=self._on_settings_saved)
+        self._settings_win = SettingsWindow(
+            on_saved=self._on_settings_saved,
+            on_restart=self._restart_app,
+            on_quit=self._quit,
+        )
 
         self._mqtt = MqttClient(
             self._config,
@@ -76,6 +81,21 @@ class App:
             on_turn_off=self._handle_turn_off,
             on_notify=self._handle_notify,
         )
+
+    # ── Single instance ───────────────────────────────────────────────────────
+
+    def _ensure_single_instance(self):
+        import ctypes
+        handle = ctypes.windll.kernel32.CreateMutexW(None, False, "Global\\SOOHA_SingleInstance")
+        if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+            ctypes.windll.user32.MessageBoxW(
+                0,
+                "SOOHA läuft bereits im System-Tray!\n\nKlicke auf das SOOHA-Symbol in der Taskleiste.",
+                "SOOHA – Bereits gestartet",
+                0x40,  # MB_ICONINFORMATION
+            )
+            sys.exit(0)
+        return handle
 
     # ── Notify handler ────────────────────────────────────────────────────────
 
@@ -185,12 +205,24 @@ class App:
 
         return pystray.Menu(*items)
 
-    # ── Quit ──────────────────────────────────────────────────────────────────
+    # ── Quit / Restart ────────────────────────────────────────────────────────
 
     def _quit(self):
         self._mqtt.publish_offline()
         time.sleep(0.3)  # let MQTT flush before exit
         self._tray.stop()
+
+    def _restart_app(self):
+        import ctypes
+        import subprocess
+        if self._mutex_handle:
+            ctypes.windll.kernel32.CloseHandle(self._mutex_handle)
+            self._mutex_handle = None
+        if getattr(sys, "frozen", False):
+            subprocess.Popen([sys.executable])
+        else:
+            subprocess.Popen([sys.executable] + sys.argv)
+        self._quit()
 
     # ── Reboot ────────────────────────────────────────────────────────────────
 
