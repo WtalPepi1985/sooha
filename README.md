@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/Logo.png" alt="SOOHA Logo" width="400"/>
+</p>
+
 # SOOHA – Screen Off Over Home Assistant
 
 Windows Tray-App, die einen Monitor über Home Assistant ein- und ausschalten kann — und gleichzeitig Windows-Systemdaten als Sensoren an HA meldet.
