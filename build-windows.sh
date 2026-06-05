@@ -77,7 +77,7 @@ BUILD_LOG=$(ssh proxmox "pct exec $CONTAINER -- bash -c '
   DISPLAY=:99 wine $PYINSTALLER \
     --onefile --windowed --name ${EXE_NAME} \
     --icon assets/icon.ico \
-    --add-data "assets;assets" \
+    --add-data assets\;assets \
     --hidden-import pystray._win32 \
     --hidden-import PIL._tkinter_finder \
     main.py 2>&1
