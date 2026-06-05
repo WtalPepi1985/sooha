@@ -14,6 +14,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-06-05
+
+Erster stabiler Release. SOOHA ist ab sofort als fertige Windows-Tray-App für Smarthome-Displays einsetzbar — PCs und Mini-PCs, auf denen Windows als Visualisierungsrechner läuft (z.B. Kiosk-Displays mit HA-Dashboard).
+
+### Added
+- **Single-Instance-Schutz** — zweiter Start zeigt MessageBox und beendet sich sofort (Windows Mutex)
+- **Restart-Dialog nach Einstellungen** — statt einfachem Hinweis: Buttons „Neu starten", „Beenden", „Weiter laufen"
+- **README** um Einsatzzweck für Smarthome-Displays erweitert (Wanddisplay, Kiosk-PC, Büromonitor)
+
+### Stable feature set
+- Monitor ein-/ausschalten via HA Switch (`switch.<device_id>`)
+- MQTT Discovery — alle Entities erscheinen automatisch in HA, kein YAML nötig
+- HA Sensoren: Uptime, CPU, RAM (optional)
+- Toast-Benachrichtigungen und Quittierungsdialog aus HA heraus
+- Text-Entity in HA zum direkten Versenden von Nachrichten
+- Multi-Device-fähig über individuelle Geräte-ID
+- Autostart via Windows Registry
+- Dunkles Einstellungsfenster mit MQTT-Verbindungstest
+
+---
+
+## [0.4.4] - 2026-06-05
+
+### Added
+- **Single-Instance-Schutz** via Windows Mutex — doppelter Start wird verhindert, MessageBox weist auf den laufenden System-Tray-Eintrag hin
+- **Restart-Dialog nach Einstellungen speichern** — drei Optionen: „Neu starten" (startet neue Instanz), „Beenden", „Weiter laufen"
+- Mutex wird vor Neustart freigegeben damit die neue Instanz starten kann
+
+---
+
 ## [0.4.3] - 2026-06-05
 
 ### Added
@@ -145,7 +175,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `build.bat` für PyInstaller One-File Build → `dist\SOOHA.exe`
 - `install.bat` für manuellen Autostart-Eintrag in der Registry
 
-[Unreleased]: https://github.com/WtalPepi1985/sooha/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/WtalPepi1985/sooha/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/WtalPepi1985/sooha/compare/v0.4.4...v1.0.0
+[0.4.4]: https://github.com/WtalPepi1985/sooha/compare/v0.4.3...v0.4.4
+[0.4.3]: https://github.com/WtalPepi1985/sooha/compare/v0.4.2...v0.4.3
+[0.4.2]: https://github.com/WtalPepi1985/sooha/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/WtalPepi1985/sooha/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/WtalPepi1985/sooha/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/WtalPepi1985/sooha/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/WtalPepi1985/sooha/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/WtalPepi1985/sooha/compare/v0.3.1...v0.3.2
