@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.2] - 2026-06-05
+
+### Added
+- **HA Text-Entity** `text.<device_id>_notify` — erscheint automatisch in HA via MQTT Discovery.
+  Text eingeben → Enter → Toast-Notification auf dem PC. Zeigt zuletzt gesendete Meldung an.
+  Automationen können weiterhin direkt per `mqtt.publish` auf `sooha/<device_id>/notify` publishen.
+
+---
+
 ## [0.4.1] - 2026-06-05
 
 ### Added

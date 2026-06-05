@@ -65,14 +65,16 @@ class MqttClient:
         self._client.will_set(self._avail_topic, "offline", retain=True)
 
     def _init_topics(self, dev_id: str):
-        self._dev_id        = dev_id
-        self._switch_disc   = f"homeassistant/switch/{dev_id}/config"
-        self._state_topic   = f"sooha/{dev_id}/screen/state"
-        self._command_topic = f"sooha/{dev_id}/screen/set"
-        self._avail_topic   = f"sooha/{dev_id}/status"
-        self._notify_topic  = f"sooha/{dev_id}/notify"
-        self._sensor_state  = {k: f"sooha/{dev_id}/sensor/{k}/state" for k in SENSOR_DEFS}
-        self._sensor_disc   = {k: f"homeassistant/sensor/{dev_id}_{k}/config" for k in SENSOR_DEFS}
+        self._dev_id             = dev_id
+        self._switch_disc        = f"homeassistant/switch/{dev_id}/config"
+        self._state_topic        = f"sooha/{dev_id}/screen/state"
+        self._command_topic      = f"sooha/{dev_id}/screen/set"
+        self._avail_topic        = f"sooha/{dev_id}/status"
+        self._notify_topic       = f"sooha/{dev_id}/notify"
+        self._notify_state_topic = f"sooha/{dev_id}/notify/state"
+        self._notify_text_disc   = f"homeassistant/text/{dev_id}_notify/config"
+        self._sensor_state       = {k: f"sooha/{dev_id}/sensor/{k}/state" for k in SENSOR_DEFS}
+        self._sensor_disc        = {k: f"homeassistant/sensor/{dev_id}_{k}/config" for k in SENSOR_DEFS}
 
     # ── MQTT callbacks ────────────────────────────────────────────────────────
 
@@ -82,6 +84,7 @@ class MqttClient:
             client.publish(self._avail_topic, "online", retain=True)
             self._publish_switch_discovery()
             self._publish_sensor_discovery()
+            self._publish_notify_text_discovery()
             client.subscribe(self._command_topic)
             client.subscribe(self._notify_topic)
 
@@ -110,6 +113,8 @@ class MqttClient:
             message = raw
         if message:
             self._on_notify(title, message)
+            # Echo back so the HA text entity shows the last sent message
+            self._client.publish(self._notify_state_topic, message, retain=True)
 
     # ── Discovery ─────────────────────────────────────────────────────────────
 
@@ -146,6 +151,18 @@ class MqttClient:
                 "device":       self._device_block(),
             }
             self._client.publish(self._sensor_disc[key], json.dumps(payload), retain=True)
+
+    def _publish_notify_text_discovery(self):
+        payload = {
+            "name":          "Benachrichtigung",
+            "unique_id":     f"{self._dev_id}_notify",
+            "command_topic": self._notify_topic,
+            "state_topic":   self._notify_state_topic,
+            "icon":          "mdi:bell-alert",
+            "availability":  [self._avail_block()],
+            "device":        self._device_block(),
+        }
+        self._client.publish(self._notify_text_disc, json.dumps(payload), retain=True)
 
     def _enabled_sensors(self) -> list:
         always   = [k for k, d in SENSOR_DEFS.items() if d.get("always")]
