@@ -8,6 +8,20 @@ Windows Tray-App, die einen Monitor über Home Assistant ein- und ausschalten ka
 
 ---
 
+## Wofür ist SOOHA gedacht?
+
+SOOHA richtet sich an Smarthome-Displays, die ein Windows-System als Visualisierungsrechner nutzen — also PCs oder Mini-PCs, auf denen dauerhaft ein HA-Dashboard, ein Kiosk-Browser oder eine Visualisierungssoftware läuft.
+
+Typische Setups:
+
+- **Wanddisplay / Kiosk-PC** — Windows-Rechner mit Touchscreen zeigt ein HA-Dashboard im Vollbild; SOOHA schaltet den Bildschirm automatisch ein wenn jemand nach Hause kommt oder eine Automation anläuft
+- **Flur-/Küchendisplay** — kleiner Mini-PC hinter dem Monitor; SOOHA sorgt dafür dass der Bildschirm nachts aus ist und auf HA-Events reagiert
+- **Büro-/Serverraum-Monitor** — zeigt Status-Dashboards; bei Störmeldungen aus HA erscheint direkt ein Quittierungsdialog auf dem Bildschirm
+
+Kurz: überall dort, wo Windows als Anzeigebetriebssystem dient und der Bildschirm aus HA heraus gesteuert werden soll.
+
+---
+
 ## Wie es funktioniert
 
 ```
